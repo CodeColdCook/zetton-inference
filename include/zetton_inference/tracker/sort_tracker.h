@@ -14,12 +14,14 @@ class SortTracker : public BaseObjectTracker {
   typedef struct TrackingBox {
     int frame;
     int id;
+    int type = -1; // add detection result
+    float last_prob = 0; // add detection result
     cv::Rect_<float> box;
 
     inline void Draw(cv::Mat &frame) {
       cv::rectangle(frame, box, cv::Scalar(255, 255, 0), 2);
       std::stringstream stream;
-      stream << "Track " << id;
+      stream << std::fixed << std::setprecision(2) << type << "_prob: " << last_prob << "@Track " << id; // add detection result
       cv::putText(frame, stream.str(), cv::Point(box.x, box.y - 5), 0, 0.5,
                   cv::Scalar(255, 255, 0), 2);
     }

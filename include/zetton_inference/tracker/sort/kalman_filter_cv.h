@@ -27,7 +27,10 @@ class KalmanTracker {
     m_start_frame = frame_id;
     // kf_count++;
   }
-  KalmanTracker(const int& frame_id, StateType initRect) {
+  KalmanTracker(const int& frame_id, 
+                StateType initRect, 
+                const int type,  // add detection result
+                const float prob) {
     init_kf(initRect);
     m_time_since_update = 0;
     m_hits = 0;
@@ -36,12 +39,15 @@ class KalmanTracker {
     m_id = kf_count;
     m_start_frame = frame_id;
     kf_count++;
+
+    m_type = type; // add detection result
+    m_last_prob = prob; // add detection result
   }
 
   ~KalmanTracker() { m_history.clear(); }
 
   StateType predict();
-  void update(StateType stateMat);
+  void update(StateType stateMat, const int type, const float prob); // add detection result
 
   StateType get_state();
   StateType get_rect_xysr(float cx, float cy, float s, float r);
@@ -54,6 +60,9 @@ class KalmanTracker {
   int m_age;
   int m_id;
   int m_start_frame;
+
+  int m_type = -1; // add detection result
+  float m_last_prob = 0.0; // add detection result
 
  private:
   void init_kf(StateType stateMat);

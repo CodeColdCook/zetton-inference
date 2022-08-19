@@ -18,7 +18,10 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   if (trackers_.empty()) {
     // initialize kalman trackers using first detections.
     for (unsigned int i = 0; i < detections.size(); i++) {
-      auto trk = tracker::sort::KalmanTracker(frame_count_, detections[i].bbox);
+      auto trk = tracker::sort::KalmanTracker(frame_count_, 
+                                              detections[i].bbox, 
+                                              detections[i].type, // add detection result
+                                              detections[i].prob);
       trackers_.push_back(trk);
     }
     return true;
@@ -106,14 +109,19 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   for (unsigned int i = 0; i < matched_pairs.size(); i++) {
     trkIdx = matched_pairs[i].x;
     detIdx = matched_pairs[i].y;
-    trackers_[trkIdx].update(detections[detIdx].bbox);
+    trackers_[trkIdx].update(detections[detIdx].bbox,
+                              detections[detIdx].type, // add detection result
+                              detections[detIdx].prob); 
     updated_tracks.insert(trkIdx);
   }
 
   // create and initialise new trackers for unmatched detections
   for (auto umd : unmatched_detections) {
     auto tracker =
-        tracker::sort::KalmanTracker(frame_count_, detections[umd].bbox);
+        tracker::sort::KalmanTracker(frame_count_,
+                                     detections[umd].bbox,
+                                     detections[umd].type, // add detection result
+                                     detections[umd].prob);
     trackers_.push_back(tracker);
     updated_tracks.insert(trackers_.size() - 1);
   }
@@ -148,6 +156,8 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
       res.box = (*it).get_state();
       res.id = (*it).m_id + 1;
       res.frame = frame_count_;
+      res.type = (*it).m_type; // add detection result
+      res.last_prob = (*it).m_last_prob;
       tracking_results.push_back(res);
       ++it;
     } else {

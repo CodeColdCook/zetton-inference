@@ -15,19 +15,25 @@
 #include "zetton_inference/tracker/mot_tracker.h"
 #include "zetton_inference/tracker/sort_tracker.h"
 
-void signalHandler(int sig) {
+void signalHandler(int sig)
+{
   AWARN_F("Trying to exit!");
   ros::shutdown();
 }
 
-class RosMotTracker {
- private:
-  inline void RosImageCallback(const sensor_msgs::ImageConstPtr& msg) {
+class RosMotTracker
+{
+private:
+  inline void RosImageCallback(const sensor_msgs::ImageConstPtr &msg)
+  {
     // convert image msg to cv::Mat
     cv_bridge::CvImagePtr cv_ptr;
-    try {
+    try
+    {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    } catch (cv_bridge::Exception& e) {
+    }
+    catch (cv_bridge::Exception &e)
+    {
       AERROR_F("cv_bridge exception: {}", e.what());
       return;
     }
@@ -41,12 +47,14 @@ class RosMotTracker {
 
     // print detections and tracks
     AINFO_F("Detections:");
-    for (auto& detection : detections) {
+    for (auto &detection : detections)
+    {
       AINFO << detection;
-      detection.Draw(cv_ptr->image);
+      // detection.Draw(cv_ptr->image);
     }
     AINFO_F("Trackings:");
-    for (auto& track : tracker_.tracks()) {
+    for (auto &track : tracker_.tracks())
+    {
       // if (track.tracking_fail_count <= 3) {
       AINFO << track;
       track.Draw(cv_ptr->image);
@@ -60,23 +68,24 @@ class RosMotTracker {
     AINFO_F("---");
   }
 
-  ros::NodeHandle* nh_;
+  ros::NodeHandle *nh_;
 
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
   image_transport::Publisher image_pub_;
 
   zetton::inference::YoloObjectDetector detector_;
-  // zetton::inference::MotTracker tracker_;
-  zetton::inference::SortTracker tracker_;
+  zetton::inference::MotTracker tracker_;
+  // zetton::inference::SortTracker tracker_;
 
- public:
-  RosMotTracker(ros::NodeHandle* nh) : nh_(nh), it_(*nh_) {
+public:
+  RosMotTracker(ros::NodeHandle *nh) : nh_(nh), it_(*nh_)
+  {
     // load params
     // hardcoded or using GPARAM
     // std::string image_topic_sub =
     // "/uvds_communication/image_streaming/mavic_0";
-    std::string image_topic_sub = "/camera/image";
+    std::string image_topic_sub = "/pointgrey/image_color";
 
     // subscribe to input video feed
     image_sub_ = it_.subscribe(image_topic_sub, 1,
@@ -95,11 +104,11 @@ class RosMotTracker {
     // config_v4.file_model_cfg = package_path + "/asset/yolov4-608.cfg";
     // config_v4.file_model_weights =
     //     package_path + "/asset/yolov4-608.weights";
-    config_v4.net_type = yolo_trt::ModelType::YOLOV4;
-    config_v4.file_model_cfg = package_path + "/asset/yolov4-visdrone.cfg";
+    config_v4.net_type = yolo_trt::ModelType::YOLOV4_TINY;
+    config_v4.file_model_cfg = package_path + "/asset/yolov4-tiny-usv-16.cfg";
     config_v4.file_model_weights =
-        package_path + "/asset/yolov4-visdrone-best.weights";
-    config_v4.inference_precision = yolo_trt::Precision::FP32;
+        package_path + "/asset/yolov4-tiny-usv-16_best.weights";
+    config_v4.inference_precision = yolo_trt::Precision::FP16;
     config_v4.detect_thresh = 0.4;
 
     // initialize detector
@@ -111,12 +120,15 @@ class RosMotTracker {
     tracker_.Init();
   }
 
-  ~RosMotTracker() {
-    if (nh_) delete nh_;
+  ~RosMotTracker()
+  {
+    if (nh_)
+      delete nh_;
   }
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
   // init node
   ros::init(argc, argv, "example_ros_mot_tracker");
   auto nh = new ros::NodeHandle("~");

@@ -41,7 +41,7 @@ class LocalObject {
   inline void Draw(cv::Mat &frame) {
     cv::rectangle(frame, bbox, color, 2);
     std::stringstream stream;
-    stream << "Track " << id;
+    stream << std::fixed << std::setprecision(2) << type << "_prob: " << last_prob << "@Track " << id; // add detection result
     cv::putText(frame, stream.str(), cv::Point(bbox.x, bbox.y - 5), 0, 0.5,
                 color, 2);
   }
@@ -53,6 +53,8 @@ class LocalObject {
   }
 
   int id;
+  int type = -1; // add detection result
+  float last_prob = 0.0; // add detection result
   bool is_opt_enable = true;
   cv::Rect2d bbox;
   cv::Mat T_measurement;

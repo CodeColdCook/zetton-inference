@@ -499,6 +499,8 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
       AINFO_F("Object {} re-detected!", local_objects_list[matched_id].id);
       local_objects_list[matched_id].track_bbox_by_detector(detections[i].bbox,
                                                             timestamp);
+      local_objects_list[matched_id].type = detections[i].type; // add detection result
+      local_objects_list[matched_id].last_prob = detections[i].prob; // add detection result
     }
   }
 

@@ -23,7 +23,7 @@ struct ObjectDetectionResult {
   inline void Draw(cv::Mat& frame) {
     cv::rectangle(frame, bbox, cv::Scalar(255, 0, 0), 2);
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << type << "@" << prob;
+    stream << std::fixed << std::setprecision(2) << type << "_prob: " << prob;
     cv::putText(frame, stream.str(), cv::Point(bbox.x, bbox.y - 5), 0, 0.5,
                 cv::Scalar(0, 0, 255), 2);
   }

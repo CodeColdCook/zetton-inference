@@ -49,7 +49,9 @@ StateType KalmanTracker::predict() {
 }
 
 // Update the state vector with observed bounding box.
-void KalmanTracker::update(StateType stateMat) {
+void KalmanTracker::update(StateType stateMat, 
+                            const int type,  // add detection result
+                            const float prob) {
   m_time_since_update = 0;
   m_history.clear();
   m_hits += 1;
@@ -63,6 +65,9 @@ void KalmanTracker::update(StateType stateMat) {
 
   // update
   kf.correct(measurement);
+
+  m_type = type; // add detection result
+  m_last_prob = prob; // add detection result
 }
 
 // Return the current state vector
